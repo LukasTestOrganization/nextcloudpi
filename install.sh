@@ -63,6 +63,14 @@ install_app    ncp.sh
 run_app_unsafe bin/ncp/CONFIG/nc-init.sh
 bash /usr/local/bin/ncp-provisioning.sh
 
+
+VER=$( git describe --always --tags | grep -oP "v\d+\.\d+\.\d+" )
+
+# check format
+grep -qP "v\d+\.\d+\.\d+" <<< "$VER" || { "Error: missing version"; exit 1; }
+
+echo "$VER" > /usr/local/etc/ncp-version
+
 popd
 
 IFACE="$( ip r | grep "default via" | awk '{ print $5 }' | head -1 )"

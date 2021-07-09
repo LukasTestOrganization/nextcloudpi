@@ -69,7 +69,7 @@ git clone --depth 20 -b "$BRANCH" -q https://github.com/nextcloud/nextcloudpi.gi
   echo "No internet connectivity"
   exit 1
 }
-cd - && cd "$TMPDIR/nextcloudpi-git"
+cd "$TMPDIR/nextcloudpi-git"
 
 VER=$( git describe --always --tags | grep -oP "v\d+\.\d+\.\d+" )
 

@@ -63,8 +63,6 @@ install_app    ncp.sh
 run_app_unsafe bin/ncp/CONFIG/nc-init.sh
 bash /usr/local/bin/ncp-provisioning.sh
 
-popd
-
 git clone --depth 20 -b "$BRANCH" -q https://github.com/nextcloud/nextcloudpi.git "$TMPDIR/nextcloudpi-git" || {
   echo "No internet connectivity"
   exit 1

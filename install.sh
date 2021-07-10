@@ -9,7 +9,7 @@
 #
 # more details at https://ownyourbits.com
 
-BRANCH=master
+export BRANCH="${1:-master}"
 #DBG=x
 
 set -e$DBG

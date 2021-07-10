@@ -10,7 +10,7 @@
 
 WEBADMIN=ncp
 WEBPASSWD=ownyourbits
-BRANCH=master
+BRANCH="${BRANCH:-master}"
 
 BINDIR=/usr/local/bin/ncp
 CONFDIR=/usr/local/etc/ncp-config.d/

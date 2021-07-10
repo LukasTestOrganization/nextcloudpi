@@ -63,18 +63,21 @@ install_app    ncp.sh
 run_app_unsafe bin/ncp/CONFIG/nc-init.sh
 bash /usr/local/bin/ncp-provisioning.sh
 
-git clone --depth 20 -b "$BRANCH" -q https://github.com/nextcloud/nextcloudpi.git "$TMPDIR/nextcloudpi-git" || {
-  echo "No internet connectivity"
-  exit 1
-}
-cd "$TMPDIR/nextcloudpi-git"
-
-VER=$( git describe --always --tags | grep -oP "v\d+\.\d+\.\d+" )
-
-# check format
-grep -qP "v\d+\.\d+\.\d+" <<< "$VER" || { "Error: missing version"; exit 1; }
-
-echo "$VER" > /usr/local/etc/ncp-version
+#if ! [[ -f /usr/local/etc/ncp-version ]]
+#then
+#  git clone --depth 20 -b "$BRANCH" -q https://github.com/nextcloud/nextcloudpi.git "$TMPDIR/nextcloudpi-git" || {
+#    echo "ERROR: Failed to clone the nextcloudpi repo"
+#    exit 1
+#  }
+#  cd "$TMPDIR/nextcloudpi-git"
+#
+#  VER=$( git describe --always --tags | grep -oP "v\d+\.\d+\.\d+" )
+#
+#  # check format
+#  grep -qP "v\d+\.\d+\.\d+" <<< "$VER" || { "Error: missing version"; exit 1; }
+#
+#  echo "$VER" > /usr/local/etc/ncp-version
+#fi
 
 popd
 

@@ -11,6 +11,7 @@
   TMPDIR="$( mktemp -d /tmp/ncp-update.XXXXXX || ( echo "Failed to create temp dir. Exiting" >&2; exit 1 ) )"
   trap "cd /; rm -rf \"${TMPDIR}\"; exit 0" 0 1 2 3 15
 
+  set -x
   echo -e "Downloading updates"
   git clone --depth 20 -b "$BRANCH" -q https://github.com/nextcloud/nextcloudpi.git "$TMPDIR" || {
     echo "No internet connectivity"
@@ -30,6 +31,8 @@
 
   echo "$VER" > /usr/local/etc/ncp-version
   echo "$VER" > /var/run/.ncp-latest-version
+
+  set +x
 
   # write changelog
   git log --graph --oneline --decorate \

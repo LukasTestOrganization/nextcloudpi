@@ -12,6 +12,8 @@
 export BRANCH="${1:-master}"
 #DBG=x
 
+echo "(install.sh) BRANCH is: $BRANCH"
+
 set -e$DBG
 
 TMPDIR="$(mktemp -d /tmp/nextcloudpi.XXXXXX || (echo "Failed to create temp dir. Exiting" >&2 ; exit 1) )"

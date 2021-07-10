@@ -11,6 +11,7 @@
 WEBADMIN=ncp
 WEBPASSWD=ownyourbits
 BRANCH="${BRANCH:-master}"
+echo "BRANCH is: $BRANCH"
 
 BINDIR=/usr/local/bin/ncp
 CONFDIR=/usr/local/etc/ncp-config.d/

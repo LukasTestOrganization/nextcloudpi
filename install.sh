@@ -38,7 +38,7 @@ pushd "$TMPDIR"
 wget -qO- --content-disposition https://github.com/nextcloud/nextcloudpi/archive/"$BRANCH"/latest.tar.gz \
   | tar -xz \
   || exit 1
-cd - && cd "$TMPDIR"/nextcloudpi-"$BRANCH"
+cd - && cd "$TMPDIR"/nextcloudpi-"${BRANCH//\//-}"
 
 # install NCP
 echo -e "\nInstalling NextCloudPi..."

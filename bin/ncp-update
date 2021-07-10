@@ -9,7 +9,7 @@
   [[ "$BRANCH" != "master" ]] && echo "INFO: updating to development branch '$BRANCH'"
 
   TMPDIR="$( mktemp -d /tmp/ncp-update.XXXXXX || ( echo "Failed to create temp dir. Exiting" >&2; exit 1 ) )"
-  trap "cd /; rm -rf \"${TMPDIR}\"; exit 0" 0 1 2 3 15
+  trap "cd /; rm -rf \"${TMPDIR}\"" EXIT
 
   set -x
   echo -e "Downloading updates"
@@ -21,6 +21,7 @@
   [[ -f /.ncp-image ]] || cd "$TMPDIR"         # update locally during build
 
   echo -e "Performing updates"
+  [[ -f "/usr/local/etc/ncp-version" ]] || echo "v0.0.0" > /usr/local/etc/ncp-version
   ./update.sh || exit 1
 
   cd "$TMPDIR"

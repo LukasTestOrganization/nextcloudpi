@@ -2,7 +2,7 @@
 
 # Backward updates mechanism
 
-set -e
+set -ex
 
 source /usr/local/etc/library.sh
 

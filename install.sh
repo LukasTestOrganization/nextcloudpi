@@ -61,25 +61,14 @@ install_app    lamp.sh
 install_app    bin/ncp/CONFIG/nc-nextcloud.sh
 run_app_unsafe bin/ncp/CONFIG/nc-nextcloud.sh
 systemctl restart mysqld # TODO this shouldn't be necessary, but somehow it's needed in Debian 9.6. Fixme
-install_app    ncp.sh
+ncp_rc=0
+install_app    ncp.sh || ncp_rc=$?
 run_app_unsafe bin/ncp/CONFIG/nc-init.sh
+if [[ "$ncp_rc" == 5 ]]
+then
+  /usr/local/bin/ncp-update "$BRANCH"
+fi
 bash /usr/local/bin/ncp-provisioning.sh
-
-#if ! [[ -f /usr/local/etc/ncp-version ]]
-#then
-#  git clone --depth 20 -b "$BRANCH" -q https://github.com/nextcloud/nextcloudpi.git "$TMPDIR/nextcloudpi-git" || {
-#    echo "ERROR: Failed to clone the nextcloudpi repo"
-#    exit 1
-#  }
-#  cd "$TMPDIR/nextcloudpi-git"
-#
-#  VER=$( git describe --always --tags | grep -oP "v\d+\.\d+\.\d+" )
-#
-#  # check format
-#  grep -qP "v\d+\.\d+\.\d+" <<< "$VER" || { "Error: missing version"; exit 1; }
-#
-#  echo "$VER" > /usr/local/etc/ncp-version
-#fi
 
 popd
 

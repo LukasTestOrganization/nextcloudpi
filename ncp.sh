@@ -218,7 +218,8 @@ EOF
   chmod g+w           /var/run/.ncp-latest-version
 
   # Install all ncp-apps
-  bin/ncp-update $BRANCH || exit 1
+  ncp_update_success=true
+  bin/ncp-update $BRANCH || ncp_update_success=false
 
   # LIMIT LOG SIZE
   grep -q maxsize /etc/logrotate.d/apache2 || sed -i /weekly/amaxsize2M /etc/logrotate.d/apache2
@@ -301,6 +302,10 @@ EOF
     ## other tweaks
     sed -i "s|^UMASK.*|UMASK           027|" /etc/login.defs
   fi
+
+  [[ "$ncp_update_success" == true ]] || exit 5
+
+  exit
 }
 
 configure() { :; }

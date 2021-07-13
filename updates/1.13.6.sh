@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 ## BACKWARD FIXES ( for older images )
 

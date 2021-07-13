@@ -103,7 +103,10 @@ if is_more_recent_than "$latest_checkpoint_version" "$current_version" ; then
   for(( i="$starting_checkpoint"; i<="$end_of_list"; i++)); do
     update_file=${updates_list[$i]}
     tag_update=$( basename "$update_file" .sh )
-    bash "$updates_dir/$update_file" || exit 1
+    bash "$updates_dir/$update_file" || {
+      echo "Error while applying update $(basename "$update_file" .sh). Exiting..."
+      exit 1
+    }
     echo "v$tag_update" > /usr/local/etc/ncp-version
     [[ $i != $end_of_list ]] && echo -e "NextCloudPi updated to version v$tag_update" || true
   done

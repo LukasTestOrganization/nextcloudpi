@@ -24,6 +24,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException, WebDriverException, TimeoutException
+from typing import List, Tuple
+import traceback
 
 suite_name = "nextcloud tests"
 test_cfg = 'test_cfg.txt'
@@ -80,11 +83,29 @@ def signal_handler(sig, frame):
         sys.exit(0)
 
 
-def test_nextcloud(IP, nc_port):
+class VisibilityOfElementLocatedByAnyLocator:
+    def __init__(self, locators: List[Tuple[By, str]]):
+        self.locators = locators
+
+    def __call__(self, driver):
+        for locator in self.locators:
+            try:
+                element = driver.find_element(*locator)
+                if element.is_displayed():
+                    return True
+            except (NoSuchElementException, WebDriverException, TimeoutException):
+                pass
+        return False
+
+
+class ConfigTestFailure(Exception):
+    pass
+
+
+def test_nextcloud(IP, nc_port, driver):
     """ Login and assert admin page checks"""
     test = Test()
-    driver = webdriver.Firefox(service_log_path='/dev/null')
-    driver.implicitly_wait(60)
+    print(driver.desired_capabilities['timeouts'])
     test.new("nextcloud page")
     try:
         driver.get(f"https://{IP}:{nc_port}/index.php/settings/admin/overview")
@@ -98,19 +119,52 @@ def test_nextcloud(IP, nc_port):
     try:
         driver.find_element_by_id("user").send_keys(nc_user)
         driver.find_element_by_id("password").send_keys(nc_pass)
-        driver.find_element_by_id("submit").click()
-    except: pass
+        driver.find_element_by_id("submit-form").click()
+    except NoSuchElementException:
+        try:
+            driver.find_element_by_id("submit").click()
+        except NoSuchElementException:
+            pass
+
     test.report("password", "Wrong password" not in driver.page_source)
 
     test.new("settings config")
+    wait = WebDriverWait(driver, 30)
     try:
-        wait = WebDriverWait(driver, 30)
-        wait.until(EC.visibility_of(driver.find_element_by_class_name("icon-checkmark-white")))
-        test.check(True)
-    except:
-        test.check(False)
+        wait.until(VisibilityOfElementLocatedByAnyLocator([(By.CSS_SELECTOR, "#security-warning-state-ok"),
+                                                           (By.CSS_SELECTOR, "#security-warning-state-warning"),
+                                                           (By.CSS_SELECTOR, "#security-warning-state-error")]))
 
-    driver.close()
+        element_ok = driver.find_element_by_id("security-warning-state-ok")
+        element_warn = driver.find_element_by_id("security-warning-state-warning")
+
+        if element_warn.is_displayed():
+
+            if driver.find_element_by_css_selector("#postsetupchecks > .errors").is_displayed() \
+                    or driver.find_element_by_css_selector("#postsetupchecks > .warnings").is_displayed():
+                raise ConfigTestFailure("There have been errors or warnings")
+
+            infos = driver.find_elements_by_css_selector("#postsetupchecks > .info > li")
+            if len(infos) != 1:
+                raise ConfigTestFailure("Warnings are shown, but there isn't exactly one info message")
+
+            php_modules = infos[0].find_elements_by_css_selector("li")
+            if len(php_modules) != 1:
+                raise ConfigTestFailure(f"Could not find the list of php modules within the info message "
+                                        f"'{infos[0].text}'")
+            if php_modules[0].text != "imagick":
+                raise ConfigTestFailure("The list of php_modules does not equal [imagick]")
+
+        elif not element_ok.is_displayed():
+            raise ConfigTestFailure("Neither the warnings nor the ok status is displayed "
+                                    "(so there are probably errors or the page is broken)")
+
+        test.check(True)
+
+    except Exception as e:
+        test.check(False)
+        print(e)
+        print(traceback.format_exc())
 
 
 if __name__ == "__main__":
@@ -164,7 +218,12 @@ if __name__ == "__main__":
     nc_port = args[1] if len(args) > 1 else "443"
     print("Nextcloud tests " + tc.yellow + IP + tc.normal)
     print("---------------------------")
-    test_nextcloud(IP, nc_port)
+
+    driver = webdriver.Firefox(service_log_path='/dev/null')
+    try:
+        test_nextcloud(IP, nc_port, driver)
+    finally:
+        driver.close()
 
 # License
 #

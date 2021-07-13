@@ -9,7 +9,7 @@
 #
 # more details at https://ownyourbits.com
 
-BRANCH=master
+export BRANCH="${1:-master}"
 #DBG=x
 
 set -e$DBG
@@ -36,7 +36,7 @@ pushd "$TMPDIR"
 wget -qO- --content-disposition https://github.com/nextcloud/nextcloudpi/archive/"$BRANCH"/latest.tar.gz \
   | tar -xz \
   || exit 1
-cd - && cd "$TMPDIR"/nextcloudpi-"$BRANCH"
+cd - && cd "$TMPDIR"/nextcloudpi-"${BRANCH//\//-}"
 
 # install NCP
 echo -e "\nInstalling NextCloudPi..."
@@ -59,8 +59,13 @@ install_app    lamp.sh
 install_app    bin/ncp/CONFIG/nc-nextcloud.sh
 run_app_unsafe bin/ncp/CONFIG/nc-nextcloud.sh
 systemctl restart mysqld # TODO this shouldn't be necessary, but somehow it's needed in Debian 9.6. Fixme
-install_app    ncp.sh
+ncp_rc=0
+install_app    ncp.sh || ncp_rc=$?
 run_app_unsafe bin/ncp/CONFIG/nc-init.sh
+if [[ "$ncp_rc" == 5 ]]
+then
+  /usr/local/bin/ncp-update "$BRANCH"
+fi
 bash /usr/local/bin/ncp-provisioning.sh
 
 popd
